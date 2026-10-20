@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Protection & Backups{% endblock %}
+{% block breadcrumb %}Defense & Recovery{% endblock %}
+
+{% block content %}
+<div class="protection-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">File Protection, Cryptographic Backups & Quarantine</h1>
+            <p class="page-desc">Pre-incident snapshot creation, post-recovery hash verification, and conservative file isolation.</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-secondary" onclick="openQuarantineModal()" id="btnOpenQuarantineModal">
+                <svg class="btn-icon text-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                Quarantine File
+            </button>
+            <button class="btn btn-primary" onclick="openCreateBackupModal()" id="btnOpenBackupModal">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Create Backup Snapshot
+            </button>
+        </div>
+    </div>
+
+    <!-- Security Advisory Banner -->
+    <div class="alert-box alert-warning mb-4">
+        <strong>Defensive Engineering Notice:</strong> Standard local backups on a writable disk provide resilience against rapid file tampering, but can still be attacked by elevated ransomware. Maintain external offline (air-gapped) copies for critical infrastructure.
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tabs-nav mb-4">
+        <button class="tab-btn active" onclick="switchProtTab('backups')" id="tabBtnBackups">Active Backups (<span id="backupsTabCount">0</span>)</button>
+        <button class="tab-btn" onclick="switchProtTab('quarantine')" id="tabBtnQuarantine">Quarantined Files (<span id="quarantineTabCount">0</span>)</button>
+        <button class="tab-btn" onclick="switchProtTab('recoveries')" id="tabBtnRecoveries">Recovery Audit Trail</button>
+    </div>
+
+    <!-- Backups Tab Section -->
+    <div class="tab-content active" id="tabBackups">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg class="card-title-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Protected Snapshot Catalog
+                </div>
+                <span class="badge badge-subtle">SHA-256 Indexed</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Original File Path</th>
+                                <th>Size</th>
+                                <th>SHA-256 Checksum</th>
+                                <th>Created</th>
+                                <th>Integrity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backupsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">Loading backup snapshots...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quarantine Tab Section -->
+    <div class="tab-content" id="tabQuarantine" style="display: none;">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg class="card-title-icon text-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                    Isolated Suspicious Files
+                </div>
+                <span class="badge badge-amber">Conservative Isolation</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Original Source Path</th>
+                                <th>Reason</th>
+                                <th>Checksum</th>
+                                <th>Quarantined At</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quarantineTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">No files currently in quarantine.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recoveries Tab Section -->
+    <div class="tab-content" id="tabRecoveries" style="display: none;">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg class="card-title-icon text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                    </svg>
+                    Restoration Operations & Verification Log
+                </div>
+                <span class="badge badge-emerald">Post-Restore Verified</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Backup Ref</th>
+                                <th>Restored Destination</th>
+                                <th>Restored Timestamp</th>
+                                <th>Post-Restore Checksum</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recoveriesTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No recovery operations performed yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Create Backup Snapshot -->
+<div class="modal-overlay" id="createBackupModal" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Create Protected Snapshot</h3>
+            <button class="modal-close-btn" onclick="closeCreateBackupModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label" for="backupPathInput">Target File or Folder Path</label>
+                <input type="text" class="form-control" id="backupPathInput" placeholder="e.g. C:\Users\Username\Documents\contract.pdf">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="backupNotesInput">Snapshot Notes / Label (Optional)</label>
+                <input type="text" class="form-control" id="backupNotesInput" placeholder="e.g. Pre-deployment baseline">
+            </div>
+            <div class="form-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" id="backupIsFolderInput">
+                    <span>Target is a Directory (Backup all child files recursively)</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeCreateBackupModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="submitCreateBackup()" id="btnSubmitBackup">Create Snapshot</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Restore Confirmation -->
+<div class="modal-overlay" id="restoreModal" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Confirm File Restoration</h3>
+            <button class="modal-close-btn" onclick="closeRestoreModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert-box alert-warning mb-3">
+                Restoring will write the verified backup file to disk. Please specify the target destination.
+            </div>
+            <input type="hidden" id="restoreBackupId">
+            <div class="form-group">
+                <label class="form-label" for="restoreDestInput">Destination Path (Leave blank for original path)</label>
+                <input type="text" class="form-control" id="restoreDestInput" placeholder="Default: Original Path">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeRestoreModal()">Cancel</button>
+            <button class="btn btn-emerald" onclick="submitRestoreBackup()" id="btnSubmitRestore">Verify & Restore</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Quarantine File -->
+<div class="modal-overlay" id="quarantineModal" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Isolate File into Quarantine</h3>
+            <button class="modal-close-btn" onclick="closeQuarantineModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert-box alert-amber mb-3">
+                Quarantining safely moves the suspicious file into the application quarantine vault.
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="quarantinePathInput">Target File Path</label>
+                <input type="text" class="form-control" id="quarantinePathInput" placeholder="e.g. C:\Users\Username\Downloads\suspect.exe.locked">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="quarantineReasonInput">Quarantine Reason</label>
+                <input type="text" class="form-control" id="quarantineReasonInput" placeholder="e.g. Suspicious extension rename observed">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeQuarantineModal()">Cancel</button>
+            <button class="btn btn-danger" onclick="submitQuarantineFile()" id="btnSubmitQuarantine">Isolate File</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/protection.js') }}"></script>
+{% endblock %}

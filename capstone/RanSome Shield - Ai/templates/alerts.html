@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Security Alerts{% endblock %}
+{% block breadcrumb %}Incident Triage & Alerts{% endblock %}
+
+{% block content %}
+<div class="alerts-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Behavioral Security Alerts & Incident Triage</h1>
+            <p class="page-desc">Explainable heuristics, risk breakdown, and operator workflow for intercepted behavioral anomalies.</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-secondary" onclick="loadAlerts()" id="btnRefreshAlerts">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Refresh Alerts
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Bar Card -->
+    <div class="card mb-4">
+        <div class="card-body py-3">
+            <div class="flex-between flex-wrap gap-3">
+                <div class="flex-gap-2 flex-wrap">
+                    <select class="form-select" id="filterSeverity" onchange="loadAlerts()">
+                        <option value="All">All Severities</option>
+                        <option value="Critical">Critical (80-100)</option>
+                        <option value="High">High (60-79)</option>
+                        <option value="Medium">Medium (30-59)</option>
+                        <option value="Low">Low (0-29)</option>
+                    </select>
+
+                    <select class="form-select" id="filterStatus" onchange="loadAlerts()">
+                        <option value="All">All Statuses</option>
+                        <option value="New">New / Unacknowledged</option>
+                        <option value="Acknowledged">Acknowledged</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="False Positive">False Positive</option>
+                    </select>
+                </div>
+
+                <div class="search-wrap">
+                    <input type="text" class="form-control" id="searchFilePath" placeholder="Search target file path..." onkeyup="handleAlertSearch(event)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts Table Card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <svg class="card-title-icon text-crimson" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                Incident Log
+            </div>
+            <span class="badge badge-subtle" id="alertsCountBadge">0 Incidents</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Timestamp</th>
+                            <th>Severity</th>
+                            <th>Risk Score</th>
+                            <th>Target File / Directory</th>
+                            <th>Explainable Reasons</th>
+                            <th>Status</th>
+                            <th>Triage Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertsTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">Loading security alerts...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Alert Details & Investigation -->
+<div class="modal-overlay" id="alertDetailModal" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="alertModalTitle">Incident Investigation</h3>
+            <button class="modal-close-btn" onclick="closeAlertDetailModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="alertModalBody">
+            <div class="loading-spinner"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeAlertDetailModal()">Close</button>
+            <button class="btn btn-primary" id="btnAcknowledgeAlert" onclick="submitAcknowledgeAlert()">Acknowledge</button>
+            <button class="btn btn-emerald" id="btnResolveAlert" onclick="submitResolveAlert('Resolved')">Mark Resolved</button>
+            <button class="btn btn-outline-cyan" id="btnFalsePositive" onclick="submitResolveAlert('False Positive')">False Positive</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+{% endblock %}

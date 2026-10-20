@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Incident Reports{% endblock %}
+{% block breadcrumb %}Audit Reports & Exports{% endblock %}
+
+{% block content %}
+<div class="reports-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Executive Incident & Defensive Audit Reports</h1>
+            <p class="page-desc">Comprehensive telemetry aggregation, cryptographic audit trials, and PDF/CSV export generation.</p>
+        </div>
+        <div class="page-actions flex-gap-2">
+            <a href="#" class="btn btn-secondary" id="btnExportCSV" onclick="triggerExport('csv')">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export CSV
+            </a>
+            <a href="#" class="btn btn-primary" id="btnExportPDF" onclick="triggerExport('pdf')">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                Export PDF Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Time Period Selector -->
+    <div class="card mb-4">
+        <div class="card-body py-3 flex-between flex-wrap gap-2">
+            <div class="flex-align-center gap-2">
+                <span class="text-muted font-sm">Audit Window:</span>
+                <select class="form-select form-select-sm" id="reportPeriodDays" onchange="loadReportSummary()">
+                    <option value="7">Past 7 Days</option>
+                    <option value="14">Past 14 Days</option>
+                    <option value="30" selected>Past 30 Days</option>
+                    <option value="90">Past 90 Days</option>
+                </select>
+            </div>
+            <div class="font-sm text-muted" id="reportPeriodScope">Scope: Loading...</div>
+        </div>
+    </div>
+
+    <!-- Executive Metrics Grid -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card">
+            <div class="stat-title">TOTAL FILE EVENTS</div>
+            <div class="stat-value text-cyan" id="repTotalEvents">0</div>
+            <div class="stat-subtext">Monitored I/O Operations</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">SUSPICIOUS EVENTS</div>
+            <div class="stat-value text-amber" id="repSuspiciousEvents">0</div>
+            <div class="stat-subtext">Flagged Heuristic Anomalies</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">TOTAL INCIDENTS</div>
+            <div class="stat-value text-crimson" id="repTotalAlerts">0</div>
+            <div class="stat-subtext">Security Alerts Logged</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">CRITICAL INCIDENTS</div>
+            <div class="stat-value text-crimson" id="repCriticalAlerts">0</div>
+            <div class="stat-subtext">Score &ge; 80/100</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">INTEGRITY SCANS</div>
+            <div class="stat-value text-blue" id="repIntegrityScans">0</div>
+            <div class="stat-subtext">SHA-256 Verifications</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">RESTORE & ISOLATION</div>
+            <div class="stat-value text-emerald" id="repRecoveries">0</div>
+            <div class="stat-subtext" id="repQuarantineSub">Quarantines: 0</div>
+        </div>
+    </div>
+
+    <!-- Audit Summary Details Card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <svg class="card-title-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                Audit Trail Breakdown & Severity Matrix
+            </div>
+            <span class="badge badge-subtle">Audit Certified</span>
+        </div>
+        <div class="card-body">
+            <div class="severity-breakdown-grid">
+                <div class="sev-box border-crimson">
+                    <div class="sev-label text-crimson">CRITICAL</div>
+                    <div class="sev-count text-crimson" id="repSevCritical">0</div>
+                    <div class="sev-desc">Mass rapid encrypt / rename anomalies</div>
+                </div>
+                <div class="sev-box border-amber">
+                    <div class="sev-label text-amber">HIGH</div>
+                    <div class="sev-count text-amber" id="repSevHigh">0</div>
+                    <div class="sev-desc">Multi-extension divergence & bursts</div>
+                </div>
+                <div class="sev-box border-blue">
+                    <div class="sev-label text-blue">MEDIUM</div>
+                    <div class="sev-count text-blue" id="repSevMedium">0</div>
+                    <div class="sev-desc">Elevated modification frequency</div>
+                </div>
+                <div class="sev-box border-emerald">
+                    <div class="sev-label text-emerald">LOW</div>
+                    <div class="sev-count text-emerald" id="repSevLow">0</div>
+                    <div class="sev-desc">Baseline deviations / minor churn</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}500 Internal Error{% endblock %}
+{% block breadcrumb %}Server Exception{% endblock %}
+
+{% block content %}
+<div class="error-page-container">
+    <div class="error-card">
+        <div class="error-code text-crimson">500</div>
+        <h2 class="error-title">Internal Security Gateway Exception</h2>
+        <p class="error-desc">An unexpected error occurred during processing. Telemetry state has been rolled back safely.</p>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary mt-3">Return to SOC Dashboard</a>
+    </div>
+</div>
+{% endblock %}

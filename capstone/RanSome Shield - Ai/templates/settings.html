@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings{% endblock %}
+{% block breadcrumb %}Engine Configuration{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Behavioral Detection & Engine Settings</h1>
+            <p class="page-desc">Calibrate sliding-window thresholds, heuristic sensitivities, cooldown intervals, and storage policies.</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-primary" onclick="saveSettings()" id="btnSaveSettings">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Apply Configuration
+            </button>
+        </div>
+    </div>
+
+    <!-- Security Warning Banner -->
+    <div class="alert-box alert-warning mb-4">
+        <strong>Warning:</strong> Lowering behavioral thresholds increases engine sensitivity and may produce false positives during intense legitimate software compilation or large batch file copies.
+    </div>
+
+    <div class="settings-grid">
+        <!-- Detection Heuristics Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg class="card-title-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    Behavioral Heuristics Calibration
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label class="form-label" for="settingWindow">Sliding Time Window (Seconds)</label>
+                    <input type="number" class="form-control" id="settingWindow" min="1" max="120" value="10">
+                    <div class="form-help">Time window in seconds to analyze consecutive I/O operations.</div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label" for="settingModThresh">Modification Velocity Threshold (Files)</label>
+                    <input type="number" class="form-control" id="settingModThresh" min="1" max="100" value="8">
+                    <div class="form-help">Number of file modifications inside sliding window to trigger alert.</div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label" for="settingRenameThresh">Mass Rename Threshold (Files)</label>
+                    <input type="number" class="form-control" id="settingRenameThresh" min="1" max="100" value="5">
+                    <div class="form-help">Number of file rename/move operations inside sliding window.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="settingCooldown">Alert Cooldown Window (Seconds)</label>
+                    <input type="number" class="form-control" id="settingCooldown" min="0" max="300" value="20">
+                    <div class="form-help">Suppresses duplicate alerts for the same ongoing incident.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Storage & System Policy Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg class="card-title-icon text-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    </svg>
+                    Storage & Audit Policies
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label class="form-label">Dedicated Application Backup Vault</label>
+                    <input type="text" class="form-control" id="settingBackupDir" readonly>
+                    <div class="form-help">Application-isolated directory for SHA-256 verified snapshots.</div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label" for="settingRetention">Audit Data Retention (Days)</label>
+                    <input type="number" class="form-control" id="settingRetention" min="1" max="365" value="30">
+                    <div class="form-help">Number of days before old telemetry events are pruned.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Network Binding Interface</label>
+                    <input type="text" class="form-control" value="127.0.0.1 (Strict Localhost Only)" readonly>
+                    <div class="form-help">Protects endpoint from unauthenticated remote network exposure.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSettings();
+    });
+
+    async function loadSettings() {
+        try {
+            const res = await fetch('/api/settings');
+            const data = await res.json();
+            if (data.status === 'success') {
+                const s = data.data;
+                document.getElementById('settingWindow').value = s.detection_window_seconds || 10;
+                document.getElementById('settingModThresh').value = s.burst_mod_threshold || 8;
+                document.getElementById('settingRenameThresh').value = s.burst_rename_threshold || 5;
+                document.getElementById('settingCooldown').value = s.cooldown_seconds || 20;
+                document.getElementById('settingBackupDir').value = s.default_backup_dir || 'instance/backups';
+                document.getElementById('settingRetention').value = s.retention_days || 30;
+            }
+        } catch (err) {
+            showToast('Failed to load settings', 'error');
+        }
+    }
+
+    async function saveSettings() {
+        const payload = {
+            detection_window_seconds: parseInt(document.getElementById('settingWindow').value),
+            burst_mod_threshold: parseInt(document.getElementById('settingModThresh').value),
+            burst_rename_threshold: parseInt(document.getElementById('settingRenameThresh').value),
+            cooldown_seconds: parseInt(document.getElementById('settingCooldown').value),
+            retention_days: parseInt(document.getElementById('settingRetention').value)
+        };
+
+        try {
+            const res = await fetchWithCsrf('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message || 'Error updating settings', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to connect to server', 'error');
+        }
+    }
+</script>
+{% endblock %}

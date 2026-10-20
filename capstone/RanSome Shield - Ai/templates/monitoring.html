@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}File Monitoring & Integrity{% endblock %}
+{% block breadcrumb %}Live Monitoring & Integrity{% endblock %}
+
+{% block content %}
+<div class="monitoring-page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Directory Monitoring & SHA-256 Integrity Verification</h1>
+            <p class="page-desc">Real-time Watchdog event interception, cryptographic baselines, and modification analysis.</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-secondary" onclick="loadMonitoredFolders(); loadEvents();" id="btnRefreshMon">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Refresh
+            </button>
+            <button class="btn btn-primary" onclick="openAddFolderModal()" id="btnOpenAddFolder">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Register Folder
+            </button>
+        </div>
+    </div>
+
+    <!-- Monitored Folders Table Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="card-title">
+                <svg class="card-title-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Active Monitored Directories
+            </div>
+            <span class="badge badge-subtle" id="foldersCountBadge">0 Registered</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Label</th>
+                            <th>Target Absolute Path</th>
+                            <th>Observer Status</th>
+                            <th>Recursive</th>
+                            <th>Last Check</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="foldersTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Loading registered folders...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Event Stream Card -->
+    <div class="card">
+        <div class="card-header flex-between flex-wrap gap-2">
+            <div class="card-title">
+                <svg class="card-title-icon text-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+                Live File Event Interception Stream
+            </div>
+            <div class="table-filters flex-gap-2">
+                <select class="form-select form-select-sm" id="filterEventType" onchange="loadEvents()">
+                    <option value="">All Event Types</option>
+                    <option value="created">Created</option>
+                    <option value="modified">Modified</option>
+                    <option value="deleted">Deleted</option>
+                    <option value="moved">Moved / Renamed</option>
+                </select>
+                <label class="custom-checkbox">
+                    <input type="checkbox" id="filterSuspiciousOnly" onchange="loadEvents()">
+                    <span>Suspicious Only</span>
+                </label>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event</th>
+                            <th>Target File Path</th>
+                            <th>Old / Renamed Path</th>
+                            <th>Heuristic Anomaly</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventsTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No recent file events intercepted.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Monitored Folder -->
+<div class="modal-overlay" id="addFolderModal" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Register Directory for Surveillance</h3>
+            <button class="modal-close-btn" onclick="closeAddFolderModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert-box alert-info mb-3">
+                Provide an authorized directory path on your system. The engine will deploy a Watchdog background observer.
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="folderPathInput">Directory Absolute Path</label>
+                <input type="text" class="form-control" id="folderPathInput" placeholder="e.g. C:\Users\Username\Documents or /home/user/docs">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="folderNameInput">Display Label (Optional)</label>
+                <input type="text" class="form-control" id="folderNameInput" placeholder="e.g. Finance Documents">
+            </div>
+            <div class="form-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" id="folderRecursiveInput" checked>
+                    <span>Monitor Subdirectories Recursively</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeAddFolderModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="submitAddFolder()" id="btnSubmitAddFolder">Start Guarding</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Integrity Check Results & Baseline Approval -->
+<div class="modal-overlay" id="integrityModal" style="display: none;">
+    <div class="modal-card modal-large">
+        <div class="modal-header">
+            <div class="modal-title-wrap">
+                <svg class="modal-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 14 14"></polyline>
+                </svg>
+                <h3>SHA-256 Cryptographic Integrity Report</h3>
+            </div>
+            <button class="modal-close-btn" onclick="closeIntegrityModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="integrityModalBody">
+            <div class="loading-spinner"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeIntegrityModal()">Close</button>
+            <button class="btn btn-warning" id="btnApproveBaseline" style="display: none;" onclick="approveNewBaseline()">Approve New Baseline</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/monitoring.js') }}"></script>
+{% endblock %}

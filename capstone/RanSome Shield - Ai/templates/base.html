@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Overview{% endblock %} — RansomShield AI</title>
+    <meta name="description" content="RansomShield AI — Ransomware Behavior Detection and File Protection System">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- CSRF Token Meta -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body class="soc-theme">
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <circle cx="12" cy="11" r="3" fill="#00E5FF" fill-opacity="0.3"/>
+                        <path d="M12 8v3l2 2" stroke="#00E5FF"/>
+                    </svg>
+                    <div class="brand-text">
+                        <span class="brand-title">Ransom<span class="text-cyan">Shield</span></span>
+                        <span class="brand-subtitle">AI SOC DEFENSE</span>
+                    </div>
+                </div>
+                <div class="system-status-pill" id="globalStatusPill">
+                    <span class="pulse-dot"></span>
+                    <span class="status-label">DEFENSE ACTIVE</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">CORE MODULES</div>
+                <ul class="nav-links">
+                    <li>
+                        <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}" id="nav-dashboard">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="9"></rect>
+                                <rect x="14" y="3" width="7" height="5"></rect>
+                                <rect x="14" y="12" width="7" height="9"></rect>
+                                <rect x="3" y="16" width="7" height="5"></rect>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('monitoring.index') }}" class="nav-item {% if request.endpoint == 'monitoring.index' %}active{% endif %}" id="nav-monitoring">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                            </svg>
+                            <span>File Monitoring</span>
+                            <span class="badge badge-subtle" id="navMonCount">0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('protection.index') }}" class="nav-item {% if request.endpoint == 'protection.index' %}active{% endif %}" id="nav-protection">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <span>Protection & Backups</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('alerts.index') }}" class="nav-item {% if request.endpoint == 'alerts.index' %}active{% endif %}" id="nav-alerts">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            <span>Security Alerts</span>
+                            <span class="badge badge-danger" id="navAlertCount" style="display: none;">0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('reports.index') }}" class="nav-item {% if request.endpoint == 'reports.index' %}active{% endif %}" id="nav-reports">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            <span>Incident Reports</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('settings.index') }}" class="nav-item {% if request.endpoint == 'settings.index' %}active{% endif %}" id="nav-settings">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="nav-section-title" style="margin-top: 2rem;">SIMULATION SANDBOX</div>
+                <div class="demo-box-card">
+                    <div class="demo-box-badge">CAPSTONE DEMO</div>
+                    <p class="demo-box-desc">Test behavioral heuristics safely with harmless synthetic events.</p>
+                    <button class="btn btn-outline-cyan btn-sm btn-block" onclick="openDemoModal()" id="btnOpenDemoModal">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        Launch Demo Suite
+                    </button>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="engine-info">
+                    <div class="engine-tag">LOCAL DEFENDER v1.0</div>
+                    <div class="engine-host">127.0.0.1:5000</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Top Navbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle-btn" id="sidebarToggle" title="Toggle Navigation">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-root">RansomShield</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">{% block breadcrumb %}Dashboard{% endblock %}</span>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="live-clock" id="liveClock">00:00:00 UTC</div>
+                    <div class="node-badge">
+                        <span class="node-indicator"></span>
+                        <span>SOC Node: LOCAL</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content Body -->
+            <main class="content-body">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Demo Simulation Modal -->
+    <div class="modal-overlay" id="demoModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <svg class="modal-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <h3>Safe Ransomware Behavior Simulator</h3>
+                </div>
+                <button class="modal-close-btn" onclick="closeDemoModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert-box alert-info">
+                    <strong>Notice:</strong> This simulator operates <em>strictly</em> inside the isolated application sandbox (<code>instance/demo_sandbox/</code>) and only creates/modifies harmless text files. No real malware is used.
+                </div>
+                
+                <div class="sandbox-status-card" id="demoSandboxStatus">
+                    <div class="status-row">
+                        <span class="status-lbl">Sandbox Path:</span>
+                        <span class="status-val font-mono" id="demoSandboxPath">Loading...</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-lbl">Sample Files Available:</span>
+                        <span class="status-val" id="demoFileCount">0 files</span>
+                    </div>
+                </div>
+
+                <div class="demo-actions-grid">
+                    <div class="demo-step-card">
+                        <h4>Step 1: Setup Sandbox</h4>
+                        <p>Generate 12 harmless sample text files for testing.</p>
+                        <button class="btn btn-secondary btn-sm" onclick="prepareDemoSandbox()" id="btnPrepDemo">Prepare Sandbox</button>
+                    </div>
+
+                    <div class="demo-step-card">
+                        <h4>Step 2: Simulate Rapid Changes</h4>
+                        <p>Simulate high-velocity file modifications & renaming bursts.</p>
+                        <button class="btn btn-danger btn-sm" onclick="runSimulation()" id="btnRunSim">Trigger Burst Event</button>
+                    </div>
+
+                    <div class="demo-step-card">
+                        <h4>Step 3: Cleanup Sandbox</h4>
+                        <p>Safely purge all generated sample files from demo store.</p>
+                        <button class="btn btn-outline-cyan btn-sm" onclick="cleanDemoSandbox()" id="btnCleanDemo">Purge Demo Files</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDemoModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="confirmModalTitle">Confirm Action</h3>
+                <button class="modal-close-btn" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn btn-primary" id="confirmModalActionBtn">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Base Javascript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
